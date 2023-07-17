@@ -45,7 +45,6 @@ void AWireActor::SetupSplineMeshComponent()
 	for (int32 i = 0; i < nEdges; i++) {
 
 		auto SplineMeshComp = NewObject<USplineMeshComponent>(this);
-		SplineMeshComp->SetStaticMesh(Mesh);
 		SplineMeshComp->RegisterComponent();
 
 		SplineComponent->GetLocationAndTangentAtSplinePoint(i, Location, Tangent, ESplineCoordinateSpace::World);
