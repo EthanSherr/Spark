@@ -24,9 +24,11 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Spline")
 	USplineComponent* SplineComponent;
 
-
 	virtual void OnConstruction(const FTransform& Transform) override;
 
-
+	// Component setup
 	void SetupSplineComponent();
+	void SetupSplineMeshComponent();
+
+	TArray<USplineMeshComponent*> SplineMeshComponents;
 };
