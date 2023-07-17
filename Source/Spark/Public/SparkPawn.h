@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
+#include "SparkMovement.h"
+#include "Components/StaticMeshComponent.h"
 #include "SparkPawn.generated.h"
 
 UCLASS()
@@ -18,6 +20,13 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+
+	UPROPERTY(EditDefaultsOnly, Category = "")
+	UStaticMeshComponent* StaticMesh;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Movement")
+	USparkMovement* Movement;
 
 public:	
 	// Called every frame

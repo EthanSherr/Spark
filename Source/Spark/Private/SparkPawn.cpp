@@ -9,6 +9,8 @@ ASparkPawn::ASparkPawn()
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	RootComponent = StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
+	Movement = CreateDefaultSubobject<USparkMovement>(TEXT("Movement"));
 }
 
 // Called when the game starts or when spawned

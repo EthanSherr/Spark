@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "Components/SplineComponent.h"
 #include "Components/SplineMeshComponent.h"
+#include "Engine/StaticMesh.h"
 #include "WireActor.generated.h"
 
 UCLASS()
@@ -16,6 +17,8 @@ class SPARK_API AWireActor : public AActor
 public:	
 	// Sets default values for this actor's properties
 	AWireActor();
+
+	USplineComponent* GetSplineComponent();
 
 protected:
 	// Called when the game starts or when spawned
@@ -30,5 +33,9 @@ protected:
 	void SetupSplineComponent();
 	void SetupSplineMeshComponent();
 
+	UPROPERTY(EditDefaultsOnly, Category = "Spline")
+	UStaticMesh* Mesh;
+
+	UPROPERTY(VisibleAnywhere, Category = "Debug")
 	TArray<USplineMeshComponent*> SplineMeshComponents;
 };
