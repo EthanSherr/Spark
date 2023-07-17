@@ -4,3 +4,4 @@
 
 #include "CoreMinimal.h"
 
+const ECollisionChannel ECC_SparkMovementChannel = ECollisionChannel::ECC_GameTraceChannel1;

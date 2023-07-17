@@ -29,27 +29,46 @@ void USparkMovement::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if (Info.Valid)
-	{
-		float DeltaLength = DeltaTime * Speed;
-		UE_LOG(LogTemp, Warning, TEXT("Info is valid!"));
-		USplineComponent* Spline = Info.Wire->GetSplineComponent();
-		Spline->GetLocationAtDistanceAlongSpline(DeltaLength + (Info.Distance * Info.Ascending ? -1 : 1), ESplineCoordinateSpace::World);
-	}
-	else
+	if (!AdvanceOnWire(DeltaTime, Info))
 	{
 		SearchForWire(Info);
 	}
 }
 
-void USparkMovement::SearchForWire(FSparkMovementInfo& OutInfo)
+bool USparkMovement::AdvanceOnWire(float DeltaTime, FSparkMovementInfo& OutInfo)
 {
-	UE_LOG(LogTemp, Warning, TEXT("TEMP TODO - GOTTA SEARCH FOR A WIRE!"))
+	if (!OutInfo.Valid) 
+	{
+		return false;
+	}
+
+
+	float DeltaDistance = DeltaTime * Speed * (OutInfo.Ascending ? 1 : -1);
+	float NewDistance = DeltaDistance + OutInfo.Distance;
+
+	USplineComponent* Spline = Info.Wire->GetSplineComponent();
+
+	if (NewDistance >= Spline->GetSplineLength()) 
+	{
+		OutInfo.Valid = false;
+		return false;
+	}
+
+	FVector NewLocation = Spline->GetLocationAtDistanceAlongSpline(NewDistance, ESplineCoordinateSpace::World);
+	GetOwner()->SetActorLocation(NewLocation);
+
+	Info.Distance = NewDistance;
+	UE_LOG(LogTemp, Warning, TEXT("distance %f"), Info.Distance)
+
+	return true;
+}
+
+bool USparkMovement::SearchForWire(FSparkMovementInfo& OutInfo)
+{
 	TArray<FOverlapResult> OutOverlaps;
 	FCollisionShape SphereCollisionShape = FCollisionShape::MakeSphere(ScanRadius);
 
 	FCollisionQueryParams CollisionQueryParams;
-	//CollisionQueryParams.bTraceComplex = true;
 	if (OutInfo.Wire) {
 		CollisionQueryParams.AddIgnoredActor(OutInfo.Wire);
 	}
@@ -74,20 +93,27 @@ void USparkMovement::SearchForWire(FSparkMovementInfo& OutInfo)
 
 	if (bResult || OutOverlaps.Num() > 0)
 	{
-		auto Hit = OutOverlaps[0];
+		for (const FOverlapResult& Hit : OutOverlaps)
+		{
+			AWireActor* WireActor = CastChecked<AWireActor>(Hit.GetActor());
+			if (!(WireActor && WireActor->IsValidLowLevel())) 
+				continue;
 
-		if (Hit.GetActor()->IsValidLowLevel()) {
-			UE_LOG(LogTemp, Warning, TEXT("Hit hit hit %s %s %s"), 
-				*Hit.GetActor()->GetName(), 
-				*Hit.GetComponent()->GetName(), 
-				*Hit.GetComponent()->GetComponentLocation().ToString()
-			);
-			
-			if (bDrawScanRadius) 
+
+			if (bDrawScanRadius)
 			{
 				DrawDebugPoint(GetWorld(), Hit.GetComponent()->GetComponentLocation(), 5, FColor::Green, false, 5, 1);
 			}
+
+			OutInfo.Distance = 0.0f;
+			OutInfo.Valid = true;
+			OutInfo.Wire = WireActor;
+			OutInfo.Ascending = true;
+			
+			return true;
 		}
 	}
+
+	return false;
 
 }

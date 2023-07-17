@@ -58,7 +58,8 @@ protected:
 	UPROPERTY()
 	FSparkMovementInfo Info;
 
-	void SearchForWire(FSparkMovementInfo& OutInfo);
+	bool AdvanceOnWire(float DeltaTime, FSparkMovementInfo& OutInfo);
+	bool SearchForWire(FSparkMovementInfo& OutInfo);
 
 public:	
 	// Called every frame
