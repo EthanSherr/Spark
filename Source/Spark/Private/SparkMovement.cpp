@@ -54,8 +54,6 @@ bool USparkMovement::AdvanceOnWire(float DeltaTime, FSparkMovementInfo& OutInfo)
 
 	if (NewDistance > Spline->GetSplineLength() || NewDistance < 0)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("New Distance is LT Spline length %f, %f"), NewDistance, Spline->GetSplineLength());
-
 		OutInfo.Valid = false;
 		SetSimulatePhysics(true);
 		return false;
