@@ -40,6 +40,7 @@ void AWireActor::SetupSplineMeshComponent()
 
 		auto SplineMeshComp = NewObject<USplineMeshComponent>(this, FName(*FString::Printf(TEXT("SplineMeshComponent %d"), i)));
 		SplineMeshComp->SetStaticMesh(Mesh);
+		SplineMeshComp->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 		SplineMeshComp->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECollisionResponse::ECR_Overlap);
 		SplineMeshComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 		SplineMeshComp->RegisterComponent();
@@ -51,12 +52,8 @@ void AWireActor::SetupSplineMeshComponent()
 		SplineMeshComp->SetStartAndEnd(Location, Tangent, LocationNext, TangentNext);
 		SplineMeshComp->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepWorldTransform);
 
-
 		SplineMeshComponents.Add(SplineMeshComp);
 	}
-
-	UE_LOG(LogTemp, Warning, TEXT("SetupSplineMeshComponent ran"));
-
 }
 
 
@@ -76,5 +73,19 @@ USplineComponent* AWireActor::GetSplineComponent()
 	return SplineComponent;
 }
 
-
-
+float AWireActor::FindDistanceOfNearestPointOnSpline(FVector WorldLocation)
+{
+	float InputKey = SplineComponent->FindInputKeyClosestToWorldLocation(WorldLocation);
+	int32 SplinePoint = FMath::TruncToInt(InputKey);
+	float SplinePointDistance = SplineComponent->GetDistanceAlongSplineAtSplinePoint(SplinePoint);
+	if (SplinePoint < SplineComponent->GetNumberOfSplinePoints())
+	{
+		float NextPointDistance = SplineComponent->GetDistanceAlongSplineAtSplinePoint(SplinePoint + 1);
+		return FMath::Lerp(SplinePointDistance, NextPointDistance, InputKey - SplinePoint);
+	}
+	else
+	{
+		float PrevPointDistance = SplineComponent->GetDistanceAlongSplineAtSplinePoint(SplinePoint - 1);
+		return FMath::Lerp(PrevPointDistance, SplinePointDistance, SplinePoint - InputKey);
+	}
+}

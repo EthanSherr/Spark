@@ -38,4 +38,7 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, Category = "Debug")
 	TArray<USplineMeshComponent*> SplineMeshComponents;
+
+public:
+	float FindDistanceOfNearestPointOnSpline(FVector WorldLocation);
 };

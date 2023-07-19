@@ -4,9 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "WireActor.h"
 #include "SparkMovement.generated.h"
 
+class AWireActor;
 
 USTRUCT(BlueprintType)
 struct FSparkMovementInfo
@@ -59,13 +59,23 @@ protected:
 	FSparkMovementInfo Info;
 
 	bool AdvanceOnWire(float DeltaTime, FSparkMovementInfo& OutInfo);
-	bool SearchForWire(FSparkMovementInfo& OutInfo);
+	
+	bool SearchAndAttachToWires(FSparkMovementInfo& OutInfo);
+	bool ScanForWires(TArray<AWireActor*>& OutWires);
+	void AttachToWire(AWireActor* Wire);
+
+	void SetSimulatePhysics(bool bSimulate);
+
+	UPrimitiveComponent* GetPrimitiveComponent();
+
+	// blueprint methods
+	//UFUNCTION(BlueprintNativeEvent, Category = "Blueprint Lifecycle")
+	//void WireAttached();
 
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	UPROPERTY()
-	AWireActor* Wire;
+
 	
 };

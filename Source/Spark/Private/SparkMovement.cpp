@@ -2,6 +2,8 @@
 
 
 #include "SparkMovement.h"
+#include "Components/PrimitiveComponent.h"
+#include "WireActor.h"
 
 // Sets default values for this component's properties
 USparkMovement::USparkMovement()
@@ -29,10 +31,12 @@ void USparkMovement::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if (!AdvanceOnWire(DeltaTime, Info))
+	if (!Info.Valid) 
 	{
-		SearchForWire(Info);
+		SearchAndAttachToWires(Info);
 	}
+	
+	AdvanceOnWire(DeltaTime, Info);
 }
 
 bool USparkMovement::AdvanceOnWire(float DeltaTime, FSparkMovementInfo& OutInfo)
@@ -48,29 +52,46 @@ bool USparkMovement::AdvanceOnWire(float DeltaTime, FSparkMovementInfo& OutInfo)
 
 	USplineComponent* Spline = Info.Wire->GetSplineComponent();
 
-	if (NewDistance >= Spline->GetSplineLength()) 
+	if (NewDistance > Spline->GetSplineLength() || NewDistance < 0)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("New Distance is LT Spline length %f, %f"), NewDistance, Spline->GetSplineLength());
+
 		OutInfo.Valid = false;
+		SetSimulatePhysics(true);
 		return false;
 	}
 
 	FVector NewLocation = Spline->GetLocationAtDistanceAlongSpline(NewDistance, ESplineCoordinateSpace::World);
+
+	UPrimitiveComponent* Prim = GetPrimitiveComponent();
+	if (Prim) {
+		Prim->SetPhysicsLinearVelocity((NewLocation - GetOwner()->GetActorLocation()) / DeltaTime);
+	}
 	GetOwner()->SetActorLocation(NewLocation);
 
 	Info.Distance = NewDistance;
-	UE_LOG(LogTemp, Warning, TEXT("distance %f"), Info.Distance)
 
 	return true;
 }
 
-bool USparkMovement::SearchForWire(FSparkMovementInfo& OutInfo)
+bool USparkMovement::SearchAndAttachToWires(FSparkMovementInfo& OutInfo)
 {
+	TArray<AWireActor*> Wires;
+	if (ScanForWires(Wires)) 
+	{
+		AttachToWire(Wires[0]);
+		return true;
+	}
+	return false;
+}
+
+bool USparkMovement::ScanForWires(TArray<AWireActor*>& OutWires) {
 	TArray<FOverlapResult> OutOverlaps;
 	FCollisionShape SphereCollisionShape = FCollisionShape::MakeSphere(ScanRadius);
 
 	FCollisionQueryParams CollisionQueryParams;
-	if (OutInfo.Wire) {
-		CollisionQueryParams.AddIgnoredActor(OutInfo.Wire);
+	if (Info.Wire) {
+		CollisionQueryParams.AddIgnoredActor(Info.Wire);
 	}
 
 	FVector Location = GetOwner()->GetActorLocation();
@@ -89,14 +110,12 @@ bool USparkMovement::SearchForWire(FSparkMovementInfo& OutInfo)
 		DrawDebugSphere(GetWorld(), Location, ScanRadius, 16, FColor::Red, false, 5, 1);
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("Overlapping %d, result %d"), OutOverlaps.Num(), bResult);
-
 	if (bResult || OutOverlaps.Num() > 0)
 	{
 		for (const FOverlapResult& Hit : OutOverlaps)
 		{
 			AWireActor* WireActor = CastChecked<AWireActor>(Hit.GetActor());
-			if (!(WireActor && WireActor->IsValidLowLevel())) 
+			if (!(WireActor && WireActor->IsValidLowLevel()))
 				continue;
 
 
@@ -105,15 +124,59 @@ bool USparkMovement::SearchForWire(FSparkMovementInfo& OutInfo)
 				DrawDebugPoint(GetWorld(), Hit.GetComponent()->GetComponentLocation(), 5, FColor::Green, false, 5, 1);
 			}
 
-			OutInfo.Distance = 0.0f;
-			OutInfo.Valid = true;
-			OutInfo.Wire = WireActor;
-			OutInfo.Ascending = true;
-			
-			return true;
+			OutWires.Add(WireActor);
 		}
 	}
 
-	return false;
+	return OutWires.Num() > 0;
 
+}
+
+void USparkMovement::AttachToWire(AWireActor* Wire)
+{
+	if (!Wire) 
+	{
+		UE_LOG(LogTemp, Error, TEXT("%s unable to attach to wire: Null wire"), *GetOwner()->GetName());
+		return;
+	}
+
+	float Distance = Wire->FindDistanceOfNearestPointOnSpline(GetOwner()->GetActorLocation());
+
+	FVector Location = Wire->GetSplineComponent()->GetLocationAtDistanceAlongSpline(Distance, ESplineCoordinateSpace::World);
+	FVector Tangent = Wire->GetSplineComponent()->GetTangentAtDistanceAlongSpline(Distance, ESplineCoordinateSpace::World);
+
+	UPrimitiveComponent* Prim = GetPrimitiveComponent();
+	if (!Prim) {
+		UE_LOG(LogTemp, Error, TEXT("%s Unable to determine Ascending: root is not a primitive"));
+		return;
+	}
+	
+	bool Ascending = true;
+
+	if (Tangent.Dot(Prim->GetPhysicsLinearVelocity()) < 0) {
+		Ascending = false;
+	}
+	
+	SetSimulatePhysics(false);
+	Info.Wire = Wire;
+	Info.Ascending = Ascending;
+	Info.Distance = Distance;
+	Info.Valid = true;
+}
+
+void USparkMovement::SetSimulatePhysics(bool bSimulate)
+{
+	UPrimitiveComponent* Prim = GetPrimitiveComponent();
+	if (!Prim)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%s could SetSimulatePhysics: root is not primitive"), *GetOwner()->GetName());
+		return;
+	}
+
+	Prim->SetSimulatePhysics(bSimulate);
+}
+
+UPrimitiveComponent* USparkMovement::GetPrimitiveComponent()
+{
+	return Cast<UPrimitiveComponent>(GetOwner()->GetRootComponent());
 }
