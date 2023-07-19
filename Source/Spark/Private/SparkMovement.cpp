@@ -54,15 +54,15 @@ bool USparkMovement::AdvanceOnWire(float DeltaTime, FSparkMovementInfo& OutInfo)
 
 	if (NewDistance > Spline->GetSplineLength() || NewDistance < 0)
 	{
-		OutInfo.Valid = false;
-		SetSimulatePhysics(true);
+		DetachFromWire();
 		return false;
 	}
 
 	FVector NewLocation = Spline->GetLocationAtDistanceAlongSpline(NewDistance, ESplineCoordinateSpace::World);
 
 	UPrimitiveComponent* Prim = GetPrimitiveComponent();
-	if (Prim) {
+	if (Prim) 
+	{
 		Prim->SetPhysicsLinearVelocity((NewLocation - GetOwner()->GetActorLocation()) / DeltaTime);
 	}
 	GetOwner()->SetActorLocation(NewLocation);
@@ -75,22 +75,25 @@ bool USparkMovement::AdvanceOnWire(float DeltaTime, FSparkMovementInfo& OutInfo)
 bool USparkMovement::SearchAndAttachToWires(FSparkMovementInfo& OutInfo)
 {
 	TArray<AWireActor*> Wires;
-	if (ScanForWires(Wires)) 
+
+	bool bScanContainedPreviousWire;
+	if (ScanForWires(Wires, bScanContainedPreviousWire)) 
 	{
 		AttachToWire(Wires[0]);
 		return true;
 	}
+	else
+	if (!bScanContainedPreviousWire)
+	{
+		Info.PreviousWire = NULL;
+	}
 	return false;
 }
 
-bool USparkMovement::ScanForWires(TArray<AWireActor*>& OutWires) {
+bool USparkMovement::ScanForWires(TArray<AWireActor*>& OutWires, bool& bScanContainedPreviousWire) {
 	TArray<FOverlapResult> OutOverlaps;
 	FCollisionShape SphereCollisionShape = FCollisionShape::MakeSphere(ScanRadius);
-
 	FCollisionQueryParams CollisionQueryParams;
-	if (Info.Wire) {
-		CollisionQueryParams.AddIgnoredActor(Info.Wire);
-	}
 
 	FVector Location = GetOwner()->GetActorLocation();
 
@@ -108,22 +111,28 @@ bool USparkMovement::ScanForWires(TArray<AWireActor*>& OutWires) {
 		DrawDebugSphere(GetWorld(), Location, ScanRadius, 16, FColor::Red, false, 5, 1);
 	}
 
-	if (bResult || OutOverlaps.Num() > 0)
+	bScanContainedPreviousWire = false;
+	for (const FOverlapResult& Hit : OutOverlaps)
 	{
-		for (const FOverlapResult& Hit : OutOverlaps)
+		AWireActor* WireActor = CastChecked<AWireActor>(Hit.GetActor());
+		if (!(WireActor && WireActor->IsValidLowLevel()))
 		{
-			AWireActor* WireActor = CastChecked<AWireActor>(Hit.GetActor());
-			if (!(WireActor && WireActor->IsValidLowLevel()))
-				continue;
-
-
-			if (bDrawScanRadius)
-			{
-				DrawDebugPoint(GetWorld(), Hit.GetComponent()->GetComponentLocation(), 5, FColor::Green, false, 5, 1);
-			}
-
-			OutWires.Add(WireActor);
+			continue;
 		}
+
+		if (WireActor == Info.PreviousWire)
+		{
+			bScanContainedPreviousWire = true;
+			continue;
+		}
+
+
+		if (bDrawScanRadius)
+		{
+			DrawDebugPoint(GetWorld(), Hit.GetComponent()->GetComponentLocation(), 5, FColor::Green, false, 5, 1);
+		}
+
+		OutWires.Add(WireActor);
 	}
 
 	return OutWires.Num() > 0;
@@ -177,4 +186,11 @@ void USparkMovement::SetSimulatePhysics(bool bSimulate)
 UPrimitiveComponent* USparkMovement::GetPrimitiveComponent()
 {
 	return Cast<UPrimitiveComponent>(GetOwner()->GetRootComponent());
+}
+
+void USparkMovement::DetachFromWire()
+{
+	Info.PreviousWire = Info.Wire;
+	Info.Valid = false;
+	SetSimulatePhysics(true);
 }

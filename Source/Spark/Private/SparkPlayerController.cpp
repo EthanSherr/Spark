@@ -54,20 +54,23 @@ void ASparkPlayerController::Tick(float DeltaTime)
 			DrawDebugLine(GetWorld(), WorldLocation, WorldLocation + WorldDirection * SwipeTraceLength, FColor::Green, true, 1000.0f, 1, 1);
 		}
 
-		TArray<ASparkPawn> Sparks;
+		TMap<FString, bool> NewCanSwipe;
+
 		for (auto Result : HitResults) 
 		{
 			ASparkPawn* Spark = Cast<ASparkPawn>(Result.GetActor());
-			if (!Spark)
+			if (!Spark || CanSwipe.Contains(Spark->GetName()))
 			{
 				continue;
 			}
 
-			// TODO ETHAN YOU ARE HERE! swipe!
-
+			NewCanSwipe.Add(Spark->GetName(), false);
+			Spark->ApplySwipe(SwipeWorldVelocity);
 
 			UE_LOG(LogTemp, Warning, TEXT("Hit %s"), *Result.GetActor()->GetName());
 		}
+
+		CanSwipe = NewCanSwipe;
 	}
 }
 

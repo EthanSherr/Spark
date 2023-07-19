@@ -49,6 +49,9 @@ protected:
 	bool bIsSwiping;
 	bool bIsMouseDown;
 
+	
+	TMap<FString, bool> CanSwipe;
+
 	FVector SwipeWorldLocation;
 	FVector SwipeWorldVelocity;
 

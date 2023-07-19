@@ -34,3 +34,36 @@ void ASparkPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 
 }
 
+
+
+void ASparkPawn::ApplySwipe(const FVector& SwipeVelocity)
+{
+	UPrimitiveComponent* Primitive = Cast<UPrimitiveComponent>(GetRootComponent());
+	if (!Primitive)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%s Couldn't ApplySwipeImpulse : No root primitive."), *GetName());
+		return;
+	}
+
+	Movement->DetachFromWire();
+	float Speed = Primitive->GetPhysicsLinearVelocity().Size();
+	FVector SwipeDirection = SwipeVelocity.GetSafeNormal(0.001);
+
+	if (bDebugApplySwipe)
+	{
+		DrawDebugLine(
+			GetWorld(), 
+			GetActorLocation(), 
+			GetActorLocation() + 300 * SwipeDirection, 
+			FColor::Red, 
+			true, 
+			1000, 
+			1, 
+			2
+		);
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("PhysLinearSpeed: %f, SwipeNorm: %s"), Speed, *SwipeDirection.ToString());
+
+	Primitive->SetPhysicsLinearVelocity(-Speed * SwipeDirection);
+}

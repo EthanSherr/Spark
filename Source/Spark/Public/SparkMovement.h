@@ -25,11 +25,15 @@ struct FSparkMovementInfo
 	UPROPERTY()
 	AWireActor* Wire;
 
+	UPROPERTY()
+	AWireActor* PreviousWire;
+
 	FSparkMovementInfo()
 	{
 		Valid = false;
 		Ascending = true;
 		Wire = NULL;
+		PreviousWire = NULL;
 	}
 };
 
@@ -61,21 +65,17 @@ protected:
 	bool AdvanceOnWire(float DeltaTime, FSparkMovementInfo& OutInfo);
 	
 	bool SearchAndAttachToWires(FSparkMovementInfo& OutInfo);
-	bool ScanForWires(TArray<AWireActor*>& OutWires);
+	bool ScanForWires(TArray<AWireActor*>& OutWires, bool& bScanContainedPreviousWire);
 	void AttachToWire(AWireActor* Wire);
 
 	void SetSimulatePhysics(bool bSimulate);
 
 	UPrimitiveComponent* GetPrimitiveComponent();
 
-	// blueprint methods
-	//UFUNCTION(BlueprintNativeEvent, Category = "Blueprint Lifecycle")
-	//void WireAttached();
-
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-
+	void DetachFromWire();
 	
 };
