@@ -25,8 +25,6 @@ public:
 protected:
 	virtual void SetupInputComponent() override;
 
-	void OnSwipeStarted(ETouchIndex::Type FingerIndex, FVector Vector);
-
 	void BeginPlay() override;
 
 	void Tick(float DeltaTime) override;
@@ -71,6 +69,11 @@ protected:
 	UInputAction* MouseLeftDownAction;
 
 	void HandleMouseLeftDown(const FInputActionValue& Value);
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+	UInputAction* TouchAction;
+
+	void HandleTouchAction();
 
 	void ShowMouseCursor(bool bShow);
 

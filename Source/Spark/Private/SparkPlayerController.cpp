@@ -113,14 +113,13 @@ void ASparkPlayerController::SetupInputComponent()
 
 	EnhancedInputComponent->BindAction(MoveMouseAction, ETriggerEvent::Triggered, this, &ASparkPlayerController::HandleMouseMove);
 	EnhancedInputComponent->BindAction(MouseLeftDownAction, ETriggerEvent::Triggered, this, &ASparkPlayerController::HandleMouseLeftDown);
+
+	EnhancedInputComponent->BindAction(TouchAction, ETriggerEvent::Triggered, this, &ASparkPlayerController::HandleTouchAction);
 }
 
-void ASparkPlayerController::OnSwipeStarted(ETouchIndex::Type FingerIndex, FVector Vector)
+void ASparkPlayerController::HandleTouchAction()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Swipe started!"))
-	//SwipeStartPos = StartingPosition;
-	//SwipeLastPos = StartingPosition;
-	bIsSwiping = true;
+	UE_LOG(LogTemp, Warning, TEXT("HandleTouchAction! yay"))
 }
 
 void ASparkPlayerController::HandleMouseMove(const FInputActionValue& Value)
