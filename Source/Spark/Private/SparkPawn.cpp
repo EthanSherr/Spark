@@ -2,6 +2,9 @@
 
 
 #include "SparkPawn.h"
+#include "../SparkGameModeBase.h"
+#include "Kismet/GameplayStatics.h"
+
 
 // Sets default values
 ASparkPawn::ASparkPawn()
@@ -18,13 +21,24 @@ void ASparkPawn::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	ASparkGameModeBase* GM = Cast<ASparkGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
+	if (GM) 
+	{
+		GM->AddSpark(this);
+	}
 }
 
-// Called every frame
-void ASparkPawn::Tick(float DeltaTime)
+void ASparkPawn::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	Super::Tick(DeltaTime);
+	Super::EndPlay(EndPlayReason);
 
+	UE_LOG(LogTemp, Warning, TEXT("SparkPawn Begindestroy %s"), *GetName());
+
+	ASparkGameModeBase* GM = Cast<ASparkGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
+	if (GM) 
+	{
+		GM->RemoveSpark(this);
+	}
 }
 
 // Called to bind functionality to input
@@ -33,8 +47,6 @@ void ASparkPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 }
-
-
 
 void ASparkPawn::ApplySwipe(const FVector& SwipeVelocity)
 {
@@ -65,5 +77,5 @@ void ASparkPawn::ApplySwipe(const FVector& SwipeVelocity)
 
 	UE_LOG(LogTemp, Warning, TEXT("PhysLinearSpeed: %f, SwipeNorm: %s"), Speed, *SwipeDirection.ToString());
 
-	Primitive->SetPhysicsLinearVelocity(-Speed * SwipeDirection);
+	Primitive->SetPhysicsLinearVelocity(Speed * SwipeDirection);
 }

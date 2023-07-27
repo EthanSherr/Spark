@@ -77,4 +77,18 @@ protected:
 
 	void ShowMouseCursor(bool bShow);
 
+// Swipe logic
+	bool GetSparkPlaneVectorIntersect(FVector WorldLocation, FVector WorldDirection, FVector& IntersectionPoint);
+
+	UPROPERTY(EditAnywhere, Category = "Debug")
+	bool bDebugSwipe;
+	void ScanSwipeSparkDeep(float DeltaTime);
+
+	FVector IntersectionPoint;
+
+
+// need to know how deep in the scene the spark is for the ScanSwipeSparkDeep functionality
+	void SetupSparkX();
+	float SparkX;
+
 };
