@@ -12,9 +12,6 @@
 
 ASparkPlayerController::ASparkPlayerController()
 {
-	bIsSwiping = false;
-	bIsMouseDown = false;
-
 	SwipeSweepRadius = 200.0f;
 
 	PrimaryActorTick.bCanEverTick = true;
@@ -193,9 +190,7 @@ void ASparkPlayerController::HandleTouchPressedAction()
 
 void ASparkPlayerController::HandleTouchReleasedAction()
 {
-	UE_LOG(LogTemp, Warning, TEXT("HandleTouchReleasedAction! OFF"))
 	IntersectionPoint = FVector::ZeroVector;
-	GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Green, TEXT("HandleTouchReleasedAction! OFF"));
 }
 
 void ASparkPlayerController::HandleMouseMove(const FInputActionValue& Value)

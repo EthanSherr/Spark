@@ -29,28 +29,18 @@ protected:
 
 	void Tick(float DeltaTime) override;
 
-
 	// Swipe config
 	UPROPERTY(EditDefaultsOnly, Category = "Setup")
 	float SwipeSweepRadius;
-
-	// Swipe state
-	bool bIsSwiping;
-	bool bIsMouseDown;
-
 	
 	TMap<FString, bool> CanSwipe;
 
-	FVector SwipeWorldLocation;
-	FVector SwipeWorldVelocity;
-
-
-	// input actions
+// input actions
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	UInputMappingContext* SparkMappingContext;
-// mouse handlers
 
+// mouse handlers
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	UInputAction* MoveMouseAction;
 
@@ -77,7 +67,6 @@ protected:
 	void ScanSwipeSparkDeep(float DeltaTime);
 
 	FVector IntersectionPoint;
-
 
 // need to know how deep in the scene the spark is for the ScanSwipeSparkDeep functionality
 	void SetupSparkX();
