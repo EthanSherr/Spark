@@ -32,16 +32,7 @@ protected:
 
 	// Swipe config
 	UPROPERTY(EditDefaultsOnly, Category = "Setup")
-	float MinSwipeDistanceThreshold;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Setup")
-	float MinSwipeTimeThreshold;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Setup")
-	float SwipeTraceLength;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Debug")
-	bool bDrawSwipeDebug;
+	float SwipeSweepRadius;
 
 	// Swipe state
 	bool bIsSwiping;
@@ -58,22 +49,23 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	UInputMappingContext* SparkMappingContext;
+// mouse handlers
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	UInputAction* MoveMouseAction;
 
-	void HandleMouseMove(const FInputActionValue& Value);
-
-
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	UInputAction* MouseLeftDownAction;
 
+	void HandleMouseMove(const FInputActionValue& Value);
 	void HandleMouseLeftDown(const FInputActionValue& Value);
 
+// touch handlers
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
-	UInputAction* TouchAction;
+	UInputAction* TouchPressedAction;
 
-	void HandleTouchAction();
+	void HandleTouchPressedAction();
+	void HandleTouchReleasedAction();
 
 	void ShowMouseCursor(bool bShow);
 

@@ -15,8 +15,7 @@ ASparkPlayerController::ASparkPlayerController()
 	bIsSwiping = false;
 	bIsMouseDown = false;
 
-	MinSwipeDistanceThreshold = 50.0f;
-	MinSwipeTimeThreshold = 0.2f;
+	SwipeSweepRadius = 200.0f;
 
 	PrimaryActorTick.bCanEverTick = true;
 }
@@ -40,7 +39,6 @@ void ASparkPlayerController::BeginPlay()
 		return;
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("SUCCESS SPARK MAPPING!"));
 	InputSystem->AddMappingContext(SparkMappingContext, 1);
 
 	SetupSparkX();
@@ -49,8 +47,6 @@ void ASparkPlayerController::BeginPlay()
 void ASparkPlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
-
-	UE_LOG(LogTemp, Warning, TEXT("SetupInputComponent"));
 
 	UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent);
 
@@ -62,8 +58,9 @@ void ASparkPlayerController::SetupInputComponent()
 
 	EnhancedInputComponent->BindAction(MoveMouseAction, ETriggerEvent::Triggered, this, &ASparkPlayerController::HandleMouseMove);
 	EnhancedInputComponent->BindAction(MouseLeftDownAction, ETriggerEvent::Triggered, this, &ASparkPlayerController::HandleMouseLeftDown);
-
-	EnhancedInputComponent->BindAction(TouchAction, ETriggerEvent::Triggered, this, &ASparkPlayerController::HandleTouchAction);
+	EnhancedInputComponent->BindAction(TouchPressedAction, ETriggerEvent::Started, this, &ASparkPlayerController::HandleTouchPressedAction);
+	EnhancedInputComponent->BindAction(TouchPressedAction,  ETriggerEvent::Completed, this, &ASparkPlayerController::HandleTouchReleasedAction);
+	EnhancedInputComponent->BindAction(TouchPressedAction,  ETriggerEvent::Canceled, this, &ASparkPlayerController::HandleTouchReleasedAction);
 }
 
 void ASparkPlayerController::SetupSparkX()
@@ -75,8 +72,6 @@ void ASparkPlayerController::SetupSparkX()
 void ASparkPlayerController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	// ScanSwipeSpark(DeltaTime);
 
 	ScanSwipeSparkDeep(DeltaTime);
 }
@@ -93,7 +88,6 @@ void ASparkPlayerController::ScanSwipeSparkDeep(float DeltaTime)
 
 	if (CurPosition.IsNearlyZero())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Screen position is 0,0 let's return early"))
 		return;
 	}
 
@@ -110,23 +104,28 @@ void ASparkPlayerController::ScanSwipeSparkDeep(float DeltaTime)
 	
 	if (!IntersectionPoint.IsZero()) 
 	{
-		// trace from NextIntersectionPoint - IntersectionPoint
-		if (bDebugSwipe)
-		{
-			DrawDebugPoint(GetWorld(), NextIntersectionPoint, 3, FColor::Green, false, 0.5, 2);
-			DrawDebugLine(GetWorld(), IntersectionPoint, NextIntersectionPoint, FColor::Green, false, 0.5, 2);
-		}
-
 		TArray<FHitResult> HitResults;
+		FCollisionShape SphereShape = FCollisionShape::MakeSphere(SwipeSweepRadius); // Set the desired sphere radius
+		FVector StartLocation = IntersectionPoint;
+		FVector EndLocation = NextIntersectionPoint;
+
 		FCollisionQueryParams CollisionParams;
 
-		bool bHit = GetWorld()->LineTraceMultiByChannel(
+		bool bHit = GetWorld()->SweepMultiByChannel(
 			HitResults,
-			WorldLocation,
-			WorldLocation + WorldDirection * SwipeTraceLength,
+			StartLocation,
+			EndLocation,
+		    FQuat::Identity,
 			ECC_Visibility,
+			SphereShape,
 			CollisionParams
 		);
+
+		if (bDebugSwipe)
+		{
+			DrawDebugSphere(GetWorld(), StartLocation, SphereShape.GetSphereRadius(), 12, FColor::Cyan, false, 0.5f);
+			DrawDebugLine(GetWorld(), IntersectionPoint, NextIntersectionPoint, FColor::Cyan, false, 0.5, 2);
+		}
 
 		TMap<FString, bool> NewCanSwipe;
 
@@ -186,9 +185,17 @@ bool ASparkPlayerController::GetSparkPlaneVectorIntersect(FVector WorldLocation,
 	return true;
 }
 
-void ASparkPlayerController::HandleTouchAction()
+void ASparkPlayerController::HandleTouchPressedAction()
 {
-	UE_LOG(LogTemp, Warning, TEXT("HandleTouchAction! yay"))
+	UE_LOG(LogTemp, Warning, TEXT("HandleTouchPressedAction! ON"))
+	GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Green, TEXT("HandleTouchReleasedAction! ON"));
+}
+
+void ASparkPlayerController::HandleTouchReleasedAction()
+{
+	UE_LOG(LogTemp, Warning, TEXT("HandleTouchReleasedAction! OFF"))
+	IntersectionPoint = FVector::ZeroVector;
+	GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Green, TEXT("HandleTouchReleasedAction! OFF"));
 }
 
 void ASparkPlayerController::HandleMouseMove(const FInputActionValue& Value)
