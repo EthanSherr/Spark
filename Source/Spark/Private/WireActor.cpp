@@ -66,6 +66,9 @@ void AWireActor::OnConstruction(const FTransform& Transform)
 void AWireActor::BeginPlay()
 {
 	Super::BeginPlay();	
+
+// TODO temp
+	SetWireType(EWireType::Green);
 }
 
 USplineComponent* AWireActor::GetSplineComponent()
@@ -88,4 +91,23 @@ float AWireActor::FindDistanceOfNearestPointOnSpline(FVector WorldLocation)
 		float PrevPointDistance = SplineComponent->GetDistanceAlongSplineAtSplinePoint(SplinePoint - 1);
 		return FMath::Lerp(PrevPointDistance, SplinePointDistance, SplinePoint - InputKey);
 	}
+}
+
+/*
+	This line is causing errors - I'm not sure the issue.  
+	Do enums need to be passed as TEnumAsByte? 
+	Or is that just needed for return?
+	Maybe there's an issue with enums being passed to blueprints - that sounds familiar.
+*/
+
+// :( not called!
+void AWireActor::SetWireType(EWireType NewWireType)
+{
+	WireType = NewWireType;
+	WireTypeChanged.Broadcast();
+}
+
+TEnumAsByte<EWireType> AWireActor::GetWireType()
+{
+	return WireType;
 }

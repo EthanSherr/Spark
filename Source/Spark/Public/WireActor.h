@@ -7,7 +7,10 @@
 #include "Components/SplineComponent.h"
 #include "Components/SplineMeshComponent.h"
 #include "Engine/StaticMesh.h"
+#include "WireType.h"
 #include "WireActor.generated.h"
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FWireTypeChangedDelegate);
 
 UCLASS()
 class SPARK_API AWireActor : public AActor
@@ -41,4 +44,19 @@ protected:
 
 public:
 	float FindDistanceOfNearestPointOnSpline(FVector WorldLocation);
+
+// wire type
+public:
+	UFUNCTION(BlueprintCallable, Category="WireType")
+	void SetWireType(EWireType NewWireType);
+
+	UFUNCTION(BlueprintCallable, Category = "WireType")
+	TEnumAsByte<EWireType> GetWireType();
+private:
+
+	UPROPERTY(EditAnywhere, Category = "Setup")
+	TEnumAsByte<EWireType> WireType;
+
+    UPROPERTY(BlueprintAssignable, Category = "MyCustomActor")
+    FWireTypeChangedDelegate WireTypeChanged;
 };
