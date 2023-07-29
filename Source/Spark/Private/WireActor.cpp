@@ -93,14 +93,6 @@ float AWireActor::FindDistanceOfNearestPointOnSpline(FVector WorldLocation)
 	}
 }
 
-/*
-	This line is causing errors - I'm not sure the issue.  
-	Do enums need to be passed as TEnumAsByte? 
-	Or is that just needed for return?
-	Maybe there's an issue with enums being passed to blueprints - that sounds familiar.
-*/
-
-// :( not called!
 void AWireActor::SetWireType(EWireType NewWireType)
 {
 	WireType = NewWireType;
