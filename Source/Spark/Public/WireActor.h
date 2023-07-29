@@ -57,6 +57,6 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Setup")
 	TEnumAsByte<EWireType> WireType;
 
-    UPROPERTY(BlueprintAssignable, Category = "MyCustomActor")
+    UPROPERTY(BlueprintAssignable, Category = "WireType")
     FWireTypeChangedDelegate WireTypeChanged;
 };
