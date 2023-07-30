@@ -32,7 +32,10 @@ void AWireActor::SetupSplineMeshComponent()
 	UE_LOG(LogTemp, Warning, TEXT("traversing"))
 	for (int32 i = 0; i < SplineMeshComponents.Num(); i++) 
 	{
-		SplineMeshComponents[i]->DestroyComponent(); // crash here 
+		if (SplineMeshComponents[i]) 
+		{
+			SplineMeshComponents[i]->DestroyComponent();
+		}
 		SplineMeshComponents.RemoveAt(i);  
 	}
 
@@ -71,6 +74,7 @@ void AWireActor::BeginPlay()
 	SetWireType(WireType);
 }
 
+#if WITH_EDITOR
 void AWireActor::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) 
 {
 	Super::PostEditChangeProperty(PropertyChangedEvent);
@@ -83,6 +87,7 @@ void AWireActor::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEv
 		SetWireType(WireType);
     }
 }
+#endif
 
 
 USplineComponent* AWireActor::GetSplineComponent()

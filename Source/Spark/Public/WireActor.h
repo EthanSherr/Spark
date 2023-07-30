@@ -27,8 +27,9 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+#if WITH_EDITOR
     virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
-
+#endif
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Spline")
 	USplineComponent* SplineComponent;

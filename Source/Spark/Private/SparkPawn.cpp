@@ -26,6 +26,8 @@ void ASparkPawn::BeginPlay()
 	{
 		GM->AddSpark(this);
 	}
+
+	Movement->DetachFromWire();
 }
 
 void ASparkPawn::EndPlay(const EEndPlayReason::Type EndPlayReason)

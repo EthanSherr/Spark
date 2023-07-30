@@ -62,8 +62,8 @@ void ASparkPlayerController::SetupInputComponent()
 
 void ASparkPlayerController::SetupSparkX()
 {
-	UE_LOG(LogTemp, Warning, TEXT("SetupSparkX"))
-	SparkX = -300.0f;
+	UE_LOG(LogTemp, Warning, TEXT("SetupSparkX TODO fix this or something!"))
+	SparkX = -50.0;
 }
 
 void ASparkPlayerController::Tick(float DeltaTime)
