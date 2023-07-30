@@ -12,6 +12,8 @@ AWireActor::AWireActor()
 	SetupSplineComponent();
 	SplineComponent->SetMobility(EComponentMobility::Static);
 	RootComponent = SplineComponent;
+
+	WireType = EWireType::Green;
 }
 
 void AWireActor::SetupSplineComponent()
@@ -27,9 +29,10 @@ void AWireActor::SetupSplineMeshComponent()
 {
 
 	// Attach the Spline Mesh to the Spline Component
+	UE_LOG(LogTemp, Warning, TEXT("traversing"))
 	for (int32 i = 0; i < SplineMeshComponents.Num(); i++) 
 	{
-		SplineMeshComponents[i]->DestroyComponent();
+		SplineMeshComponents[i]->DestroyComponent(); // crash here 
 		SplineMeshComponents.RemoveAt(i);  
 	}
 
@@ -56,7 +59,6 @@ void AWireActor::SetupSplineMeshComponent()
 	}
 }
 
-
 void AWireActor::OnConstruction(const FTransform& Transform)
 {
 	Super::OnConstruction(Transform);
@@ -66,10 +68,22 @@ void AWireActor::OnConstruction(const FTransform& Transform)
 void AWireActor::BeginPlay()
 {
 	Super::BeginPlay();	
-
-// TODO temp
-	SetWireType(EWireType::Green);
+	SetWireType(WireType);
 }
+
+void AWireActor::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) 
+{
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+
+    const FName PropertyName = PropertyChangedEvent.GetPropertyName();
+
+	if (PropertyName == GET_MEMBER_NAME_CHECKED(AWireActor, WireType))
+    {
+		UE_LOG(LogTemp, Warning, TEXT("WireType changed!"));
+		SetWireType(WireType);
+    }
+}
+
 
 USplineComponent* AWireActor::GetSplineComponent()
 {

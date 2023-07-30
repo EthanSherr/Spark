@@ -115,7 +115,7 @@ bool USparkMovement::ScanForWires(TArray<AWireActor*>& OutWires, bool& bScanCont
 	for (const FOverlapResult& Hit : OutOverlaps)
 	{
 		AWireActor* WireActor = CastChecked<AWireActor>(Hit.GetActor());
-		if (!(WireActor && WireActor->IsValidLowLevel()))
+		if (!WireActor || !WireActor->IsValidLowLevel() || WireActor->GetWireType() != EWireType::Green)
 		{
 			continue;
 		}
